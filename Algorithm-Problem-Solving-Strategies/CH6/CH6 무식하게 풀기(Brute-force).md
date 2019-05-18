@@ -128,5 +128,88 @@ Example
 
 ## 6.3 문제:소풍
 
+```c++
+#include <iostream>
+#include <vector>
 
+//default value of global variable is 0
+int n;
+bool areFriend[10][10];
 
+//이 코드는 중복으로 여러번 세고 있음
+int countPairings(bool taken[10]) {
+	bool finished = true;
+	for (int i = 0; i < n; ++i) {
+		//짝이 안지어진 학생이 있으면 finished = false
+		if (!taken[i])
+			finished = false;
+	}
+	//모든 학생이 짝이 지어졌으면 returnr 1
+	if (finished) return 1;
+	int ret = 0;
+
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < n; ++j) {
+			if (!taken[i] && !taken[j] && areFriend[i][j]) {
+				taken[i] = taken[j] = true;
+				//재귀 함수 사용
+				ret += countPairings(taken);
+				taken[i] = taken[j] = false;
+			}
+		}
+	}
+	return ret;
+}
+```
+
+이 코드는 중복으로 여러번 세고 있음.
+
+실질적으로 같은 답을 중복으로 세는 이런 상황은 경우의 수를 다룰 떄 굉장히 흔하게 마주치게 됨.
+
+- 이를 해결하기 위한 좋은 방법은 항상 특정 형태를 갖는 답만을 세는 것.
+- 흔히 사용하는 방법으로는 같은 답 중에서 ***사전순으로 가장 먼저 오는 답 하나만을 세는 것*** 
+- 이 속성을 강제하기 위해서 각 단계에서 남아 있는 학생들 중 가장 번호가 빠른 학생의 짝을 찾아 주도록 함.
+
+```C++
+#include <iostream>
+
+using namespace std;
+
+int n;
+bool areFriends[10][10];
+
+int countPairings(bool taken[10]) {
+	int firstFree = -1;
+	for (int i = 0; i < n; ++i) {
+		if (!taken[i]) {
+			//첫번째로 짝 안지어진 학생 찾음
+			firstFree = i;
+			break;
+		}
+	}
+	//모든 학생이 짝이 있으면 return 1
+	if (firstFree == -1) return 1;
+
+	int ret = 0;
+	//짝이 안지어진 학생부터 loop 시작
+	for (int pairWith = firstFree + 1; pairWith < n; ++pairWith) {
+		if (!taken[pairWith] && areFriends[firstFree][pairWith]) {
+			taken[firstFree] = taken[pairWith] = true;
+			ret += countPairings(taken);
+			//set free for next loop and recursion
+			taken[firstFree] = taken[pairWith] = false;
+		}
+	}
+	return ret;
+}
+```
+
+## 6.5 문제: 게임판 덮기
+
+흰 칸의 수가 3의 배수가 아닐 경우에는 무조건 답이 없으니 이 부분을 따로 처리, 이 외의 경우에는 흰 칸의 수를 3으로 나눠서 내려놓을 블록의 수 N을 얻은뒤, 문제의 답을 생성하는 과정을 N조각으로 나눠 한 조각에서 한 블록을 내려놓으면 됨.
+
+중복을 피하기 위해 특정한 순서대로 답을 생성하도록 강제할 필요가 있음.
+
+***가장 간편한 방법은 재귀 호출의 각 단계마다 아직 빈 칸 중에서 가장 윗 줄, 그 중에서도 가장 왼쪽에 있는 칸을 덮더록 하는 것.*** 
+
+우리는 항상 빈 칸중에서 가장 위, 그중에서도 가장 왼쪽에 있는 칸을 처음 채운다고 가정하기 때문에 그 왼쪽과 위에 있는 칸은 항상 채워져 있다고 가정 할 수 있음.
