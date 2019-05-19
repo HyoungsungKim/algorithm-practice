@@ -213,3 +213,68 @@ int countPairings(bool taken[10]) {
 ***가장 간편한 방법은 재귀 호출의 각 단계마다 아직 빈 칸 중에서 가장 윗 줄, 그 중에서도 가장 왼쪽에 있는 칸을 덮더록 하는 것.*** 
 
 우리는 항상 빈 칸중에서 가장 위, 그중에서도 가장 왼쪽에 있는 칸을 처음 채운다고 가정하기 때문에 그 왼쪽과 위에 있는 칸은 항상 채워져 있다고 가정 할 수 있음.
+
+## 6.7 최적화 문제
+
+지금까지 다뤘던 문제와는 달리 문제의 답이 하나가 아니라 여러 개 이고, 그 중에서 어떤 기준에 따라 가장 '좋은' 답을 찾아 내는 문제들을 통칭해 최적화 문제(Optimization problem)라고 부름.
+
+- 동적 계획법
+- 조화 탐색
+- 최적화 문제를 결정 문제로 바꿔서 해결하는 기법
+
+### 예제: 여행하는 외판원 문제(Traveling Salesman Problem:TSP)
+
+```c++
+int n;	//도시의 수
+double dist[MAX][MAX]; //두 도시 간의 거리를 저장하는 배열
+//path : 지금까지 만든 경로
+//visited : 각 도시의 방문 여부
+//currentLength : 지금까지 만든 경로의 길이
+
+//나머지 도시들을 모두 방문하는 경로들 중 가장 짧은 것의 길이를 반환
+double shortestPath(vector<int>& path, vector<bool>& visited, double currentLength) {
+    //기저 사례 : 모든 도시를 다 방문했을 때는 시작 도시로 돌아가고 종료.
+	if(path.size() == n) {
+		return currentLength + dist[path[0]][path.back()];
+	}
+	double ret = INF;	//매우 큰 값으로 초기화 ex)987654321
+    //다음 방문 할 도시를 전부 시도해 봄        
+	for(int next = 0; next < n; ++next){
+		if(visited[next]) continue;
+        //path.back() : 가장 최근에 간 경로
+		int here = path.back();
+		path.push_back(next);
+		visited[next] = true;
+        
+		double cand = shortestPath(path, visited, currentLength + dist[here][next]);
+		
+		ret = min(ret, cand);
+		visited[next] = false;
+		path.pop_back();
+	}
+	return ret;
+}
+```
+
+## 6.8 문제:시계 맞추기
+
+### 문제 변형하기
+
+이 문제는 있는 그대로 풀려고 하면 꽤나 복잡해짐. 그러나 문제의 특성을 이용해 적절히 단순화하면 완전 탐색으로 해결 할 수 있음
+
+- 스위치를 누르는 순서는 전혀 중요하지 않음.
+- 따라서 계산해야 하는 것은 각 스위치를 몇 번이나 누를 것이냐 뿐
+- 시계는 12시간이 지나면 제 자리로 돌아온다는 점을 이용하면 무한한 조합의 수을 유한하게 바꿀  수 있음. 어떤 스위치를 네 번 누르면 연결된 시계는 모두 12시간씩 앞으로 이동하니 하나도 누르지 않은 것과 다름이 없음.
+- 따라서 어떤 스위치건 간에 최대 세 번 이상 누를 일이 없음.
+- 따라서 각 스위치를 누르는 횟수는 0에서 3사이의 정수.
+
+### 완전 탐색 구현하기
+
+- 문제를 모두 열 조각으로 나눈 후 각 조각에서 한 스위치를 누를 횟수를 정하는 식으로 구현되어 있음.
+
+## 6.10 많이 등장하는 완전 탐색 유형
+
+- 모든 순열 만들기
+- 모든 조합 만들기
+- 2^n가지 경우의 수 만들기
+
